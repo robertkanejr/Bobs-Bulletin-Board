@@ -1,83 +1,25 @@
-import { createSlice, nanoid } from "@reduxjs/toolkit";
+import { createSlice, nanoid, createAsyncThunk } from "@reduxjs/toolkit";
 import { sub } from "date-fns";
+import axios from "axios";
 
-const randomNumber = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
+// const randomNumber = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
 
-const initialState = [
-	{
-		id: "1",
-		title: "The Mandalorian Creed",
-		content: "This is the way.",
-		date: sub(new Date(), { minutes: randomNumber(1, 30) }).toISOString(),
-		userId: "1",
-		reactions: {
-			thumbsUp: 0,
-			wow: 0,
-			heart: 0,
-			rocket: 0,
-			funny: 0,
-		},
-	},
-	{
-		id: "2",
-		title: "Things You Will Never Hear Me Say",
-		content: "Save me Superman!",
-		date: sub(new Date(), { minutes: randomNumber(30, 60) }).toISOString(),
-		userId: "4",
-		reactions: {
-			thumbsUp: 0,
-			wow: 0,
-			heart: 0,
-			rocket: 0,
-			funny: 0,
-		},
-	},
-	{
-		id: "3",
-		title: "Thoughts on Homeownership",
-		content:
-			"I simply pretend that my skeleton is me and my body is my house, and that way, I’m always home!.",
-		date: sub(new Date(), { minutes: randomNumber(60, 100) }).toISOString(),
-		userId: "2",
-		reactions: {
-			thumbsUp: 0,
-			wow: 0,
-			heart: 0,
-			rocket: 0,
-			funny: 0,
-		},
-	},
+const POSTS_URL = "https://jsonplaceholder.typicode.com/posts";
 
-	{
-		id: "4",
-		title: "My Life Philosophy",
-		content: "The future is real. The past is all made up.",
-		date: sub(new Date(), { minutes: randomNumber(100, 300) }).toISOString(),
-		userId: "3",
-		reactions: {
-			thumbsUp: 0,
-			wow: 0,
-			heart: 0,
-			rocket: 0,
-			funny: 0,
-		},
-	},
+const initialState = {
+	posts: [],
+	status: "idle", //'idle' | 'loading' | 'succeeded' | 'failed'
+	error: null,
+};
 
-	{
-		id: "5",
-		title: "Jedi Blessings",
-		content: "May the force be with you.",
-		date: sub(new Date(), { minutes: randomNumber(300, 500) }).toISOString(),
-		userId: "0",
-		reactions: {
-			thumbsUp: 0,
-			wow: 0,
-			heart: 0,
-			rocket: 0,
-			funny: 0,
-		},
-	},
-];
+export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
+	try {
+		const response = await axios.get(POSTS_URL);
+		return response.data;
+	} catch (err) {
+		return err.message;
+	}
+});
 
 const postsSlice = createSlice({
 	name: "posts",
@@ -85,7 +27,7 @@ const postsSlice = createSlice({
 	reducers: {
 		postAdded: {
 			reducer(state, action) {
-				state.push(action.payload);
+				state.posts.push(action.payload);
 			},
 			prepare(title, content, userId) {
 				return {
@@ -108,13 +50,46 @@ const postsSlice = createSlice({
 		},
 		reactionAdded(state, action) {
 			const { postId, reaction } = action.payload;
-			const existingPost = state.find((post) => post.id === postId);
+			const existingPost = state.posts.find((post) => post.id === postId);
 			if (existingPost) existingPost.reactions[reaction]++;
 		},
 	},
+	//builder param is an object that allows for add'l case reducers that run in response to actions defined in the slice
+	extraReducers(builder) {
+		builder
+			.addCase(fetchPosts.pending, (state, action) => {
+				state.status = "loading";
+			})
+			.addCase(fetchPosts.fulfilled, (state, action) => {
+				state.status = "succeeded";
+				//Adding date and reactions to the posts
+				let min = 1;
+				const loadedPosts = action.payload.map((post) => {
+					post.date = sub(new Date(), { minutes: min++ }).toISOString();
+					post.reactions = {
+						thumbsUp: 0,
+						wow: 0,
+						heart: 0,
+						rocket: 0,
+						funny: 0,
+					};
+					return post;
+				});
+				//add any fetched posts to the array
+				state.posts = state.posts.concat(loadedPosts);
+			})
+			.addCase(fetchPosts.rejected, (state, action) => {
+				state.status = "failed";
+				state.error = action.error.message;
+			});
+	},
 });
 
-export const selectAllPosts = (state) => state.posts;
+// when the shape of the state changes, only this function needs to be updated
+export const selectAllPosts = (state) => state.posts.posts;
+
+export const getPostsStatus = (state) => state.posts.status;
+export const getPostsError = (state) => state.posts.error;
 
 export const { postAdded, reactionAdded } = postsSlice.actions;
 
