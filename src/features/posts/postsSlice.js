@@ -21,6 +21,15 @@ export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
 	}
 });
 
+export const addNewPost = createAsyncThunk("posts/addNewPost", async (initialPost) => {
+	try {
+		const response = await axios.post(POSTS_URL, initialPost);
+		return response.data;
+	} catch (err) {
+		return err.message;
+	}
+});
+
 const postsSlice = createSlice({
 	name: "posts",
 	initialState,
@@ -51,7 +60,9 @@ const postsSlice = createSlice({
 		reactionAdded(state, action) {
 			const { postId, reaction } = action.payload;
 			const existingPost = state.posts.find((post) => post.id === postId);
-			if (existingPost) existingPost.reactions[reaction]++;
+			if (existingPost) {
+				existingPost.reactions[reaction]++;
+			}
 		},
 	},
 	//builder param is an object that allows for add'l case reducers that run in response to actions defined in the slice
@@ -81,6 +92,22 @@ const postsSlice = createSlice({
 			.addCase(fetchPosts.rejected, (state, action) => {
 				state.status = "failed";
 				state.error = action.error.message;
+			})
+			.addCase(addNewPost.fulfilled, (state, action) => {
+				//convert userId to a number
+				action.payload.userId = Number(action.payload.userId);
+				//add date and reactions to the post
+				action.payload.date = new Date().toISOString();
+				action.payload.reactions = {
+					thumbsUp: 0,
+					wow: 0,
+					heart: 0,
+					rocket: 0,
+					funny: 0,
+				};
+				console.log(action.payload);
+				//add new post to the array
+				state.posts.push(action.payload);
 			});
 	},
 });
