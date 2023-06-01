@@ -2,8 +2,6 @@ import { createSlice, nanoid, createAsyncThunk } from "@reduxjs/toolkit";
 import { sub } from "date-fns";
 import axios from "axios";
 
-// const randomNumber = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
-
 const POSTS_URL = "https://jsonplaceholder.typicode.com/posts";
 
 const initialState = {
@@ -13,21 +11,13 @@ const initialState = {
 };
 
 export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
-	try {
-		const response = await axios.get(POSTS_URL);
-		return response.data;
-	} catch (err) {
-		return err.message;
-	}
+	const response = await axios.get(POSTS_URL);
+	return response.data;
 });
 
 export const addNewPost = createAsyncThunk("posts/addNewPost", async (initialPost) => {
-	try {
-		const response = await axios.post(POSTS_URL, initialPost);
-		return response.data;
-	} catch (err) {
-		return err.message;
-	}
+	const response = await axios.post(POSTS_URL, initialPost);
+	return response.data;
 });
 
 const postsSlice = createSlice({
@@ -94,6 +84,17 @@ const postsSlice = createSlice({
 				state.error = action.error.message;
 			})
 			.addCase(addNewPost.fulfilled, (state, action) => {
+				//------BUG FIX FOR API POST IDS------
+				//creating sortedPosts and assigning the ID
+				//Only needed because the API doesn't return accurate new post IDs
+				const sortedPosts = state.posts.sort((a, b) => {
+					if (a.id > b.id) return 1;
+					if (a.id < b.id) return -1;
+					return 0;
+				});
+				action.payload.id = sortedPosts[sortedPosts.length - 1].id + 1;
+				//------END BUG FIX------
+
 				//convert userId to a number
 				action.payload.userId = Number(action.payload.userId);
 				//add date and reactions to the post
@@ -114,7 +115,6 @@ const postsSlice = createSlice({
 
 // when the shape of the state changes, only this function needs to be updated
 export const selectAllPosts = (state) => state.posts.posts;
-
 export const getPostsStatus = (state) => state.posts.status;
 export const getPostsError = (state) => state.posts.error;
 
