@@ -1,6 +1,6 @@
 {
 	"short_name": "Bulletin Board",
-	"name": "React Bulletin Board",
+	"name": "Bob's Bulletin Board",
 	"icons": [],
 	"start_url": ".",
 	"display": "standalone",
