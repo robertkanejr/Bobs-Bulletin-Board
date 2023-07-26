@@ -23,7 +23,7 @@ Click **[here](https://rck-bulletin-board.netlify.app/)** to view the live site.
 <img src="./public/Add-A-Post.png">
 <br>
 <br>
-<strong>New post saved with live reactions:</strong>
+<strong>New post saved to board with live timestamp and reactions:</strong>
 <br>
 <br>
 <img src="./public/New-post-reactions.png">
