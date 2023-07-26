@@ -6,15 +6,22 @@
 
 html {
 	font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
-	background: #333;
-	color: whitesmoke;
+	color: white;
 }
 
 body {
+	background: url(../public/bulletin-board-bg-image.png) no-repeat center center fixed;
+	background-size: cover;
 	min-height: 100vh;
 	font-size: 1.5rem;
 	padding: 0 10% 10%;
 }
+
+main {
+	max-width: 500px;
+	margin: auto;
+}
+
 
 input,
 textarea,
@@ -22,11 +29,13 @@ button,
 select {
 	font: inherit;
 	margin-bottom: 1em;
+	border: 1px solid #9c9999;
+	border-radius: 5px;
 }
 
-main {
-	max-width: 500px;
-	margin: auto;
+button {
+	padding: 0.3em;
+	cursor: pointer;
 }
 
 section {
@@ -38,10 +47,16 @@ article {
 	border: 1px solid whitesmoke;
 	border-radius: 10px;
 	padding: 1em;
+	background-color: rgba(0, 0, 0, 0.32);
 }
 
 h1 {
 	font-size: 3.5rem;
+}
+
+h2 {
+	padding-bottom: 20px;
+	text-align: center;
 }
 
 p {

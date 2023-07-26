@@ -3,7 +3,7 @@ import AddPostsForm from "./features/posts/AddPostsForm";
 
 function App() {
 	return (
-		<main className="App">
+		<main>
 			<AddPostsForm />
 			<PostsList />
 		</main>
